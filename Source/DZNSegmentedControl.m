@@ -32,6 +32,7 @@
 @synthesize barPosition = _barPosition;
 @synthesize height = _height;
 @synthesize width = _width;
+@synthesize selectionIndicatorColor = _selectionIndicatorColor;
 
 #pragma mark - Initialize Methods
 
@@ -85,7 +86,7 @@
     _font = [UIFont systemFontOfSize:15.0f];
     
     _selectionIndicator = [UIView new];
-    _selectionIndicator.backgroundColor = self.tintColor;
+    _selectionIndicator.backgroundColor = self.selectionIndicatorColor;
     [self addSubview:_selectionIndicator];
     
     _hairline = [UIView new];
@@ -297,6 +298,18 @@
     }
     
     return color;
+}
+
+- (void)setSelectionIndicatorColor:(UIColor *)selectionIndicatorColor {
+    _selectionIndicatorColor = selectionIndicatorColor;
+    self.selectionIndicator.backgroundColor = _selectionIndicatorColor;
+}
+
+- (UIColor *)selectionIndicatorColor {
+    if (!_selectionIndicatorColor) {
+        _selectionIndicatorColor = self.tintColor;
+    }
+    return _selectionIndicatorColor;
 }
 
 - (BOOL)showsCount
@@ -838,7 +851,7 @@
 - (void)configureAccessoryViews
 {
     self.selectionIndicator.frame = [self selectionIndicatorRect];
-    self.selectionIndicator.backgroundColor = self.tintColor;
+    self.selectionIndicator.backgroundColor = self.selectionIndicatorColor;
     
     self.hairline.frame = [self hairlineRect];
 }

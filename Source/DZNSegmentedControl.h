@@ -42,6 +42,8 @@ enum {
 @property (nonatomic, retain) UIFont *font UI_APPEARANCE_SELECTOR;
 /** The color of the hairline. Default is light gray. To hide the hairline, just set clipsToBounds to YES, like you would do it for UIToolBar & UINavigationBar. */
 @property (nonatomic, readwrite) UIColor *hairlineColor UI_APPEARANCE_SELECTOR;
+/** Set the color of the selection indicator */
+@property (nonatomic, strong) UIColor *selectionIndicatorColor;
 /** The custom number formatter used to format the count values. A default number formatter will be used if this property is nil. If this property is set, it takes precedence over the showsGroupingSeparators flag. */
 @property (nonatomic, strong) NSNumberFormatter *numberFormatter;
 /** YES to display the count number on top of the titles. Default is YES. */
