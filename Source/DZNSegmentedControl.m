@@ -18,6 +18,9 @@
 @property (nonatomic, strong) NSMutableDictionary *colors;
 @property (nonatomic, strong) NSMutableArray *counts; // of NSNumber
 
+@property (nonatomic, copy, nullable) void(^layoutSegmentButtonsCallback)(NSArray *__nonnull);
+@property (nonatomic, copy, nullable) CGRect(^selectionIndicatorRectCallback)(UIButton *__nonnull);
+
 @property (nonatomic, assign) CGPoint scrollOffset;
 
 @property (nonatomic, getter = isTransitioning) BOOL transitioning;
@@ -122,7 +125,17 @@
     else if (self.selectedSegmentIndex < 0) {
         _selectedSegmentIndex = 0;
     }
-    
+
+    if (self.layoutSegmentButtonsCallback) {
+        self.layoutSegmentButtonsCallback([self buttons]);
+    } else {
+        [self layoutSegmentButtons];
+    }
+
+    [self configureAccessoryViews];
+}
+
+- (void)layoutSegmentButtons {
     [[self buttons] enumerateObjectsUsingBlock:^(UIButton *button, NSUInteger idx, BOOL *stop) {
         
         CGRect rect = CGRectMake(roundf(self.bounds.size.width/self.numberOfSegments)*idx, 0.0f, roundf(self.bounds.size.width/self.numberOfSegments),
@@ -141,8 +154,6 @@
             button.selected = YES;
         }
     }];
-    
-    [self configureAccessoryViews];
 }
 
 - (void)willMoveToSuperview:(UIView *)newSuperview
@@ -318,6 +329,10 @@
         }
     }
     
+    if (self.selectionIndicatorRectCallback) {
+        return self.selectionIndicatorRectCallback(button);
+    }
+
     CGRect frame = CGRectZero;
     frame.origin.y = (_barPosition > UIBarPositionBottom) ? 0.0f : (button.frame.size.height-self.selectionIndicatorHeight);
     

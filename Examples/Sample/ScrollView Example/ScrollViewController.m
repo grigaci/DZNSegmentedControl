@@ -7,8 +7,10 @@
 //
 
 #import "ScrollViewController.h"
-#import "DZNSegmentedControl.h"
-#import "UIScrollView+DZNSegmentedControl.h"
+
+#import <DZNSegmentedControl/DZNSegmentedControl.h>
+#import <DZNSegmentedControl/UIScrollView+DZNSegmentedControl.h>
+#import <DZNSegmentedControl/DZNSegmentedControl+Layout.h>
 
 @interface ScrollViewController () <DZNSegmentedControlDelegate>
 @end
@@ -33,6 +35,10 @@
     self.segmentedControl.autoAdjustSelectionIndicatorWidth = NO;
     self.segmentedControl.height = 30;
     
+
+//    Uncomment for performing a custom layout
+//    [self useSegmentedControlCustomLayout];
+
     self.scrollView.segmentedControl = self.segmentedControl;
     self.scrollView.scrollDirection = DZNScrollDirectionVertical;
     self.scrollView.scrollOnSegmentChange = YES;
@@ -144,6 +150,36 @@
 - (void)dealloc
 {
     
+}
+
+#pragma mark - Private methods
+
+- (void)useSegmentedControlCustomLayout {
+    __weak typeof(self) weakself = self;
+
+    // Layout buttons
+    self.segmentedControl.layoutSegmentButtonsCallback = ^(NSArray *__nonnull buttons) {
+        CGFloat padding = 10.f;
+        __block CGFloat xCoord = padding;
+        [buttons enumerateObjectsUsingBlock:^(UIButton *button, NSUInteger idx, BOOL *stop) {
+            CGSize sizeThatFits = [button sizeThatFits:weakself.segmentedControl.bounds.size];
+            CGRect rect = CGRectMake(xCoord, .0f, sizeThatFits.width, CGRectGetHeight(weakself.segmentedControl.bounds));
+            [button setFrame:rect];
+            xCoord = CGRectGetMaxX(rect) + padding;
+            if (idx == weakself.segmentedControl.selectedSegmentIndex) {
+                button.selected = YES;
+            }
+        }];
+    };
+
+    // Layout selection indicator
+    self.segmentedControl.selectionIndicatorRectCallback = ^(UIButton *__nonnull button) {
+        CGRect frame = CGRectZero;
+        frame.origin.y = (weakself.segmentedControl.barPosition > UIBarPositionBottom) ? 0.0f : (button.frame.size.height-weakself.segmentedControl.selectionIndicatorHeight);
+        frame.size = CGSizeMake(CGRectGetWidth(button.frame), weakself.segmentedControl.selectionIndicatorHeight);
+        frame.origin.x = CGRectGetMinX(button.frame);
+        return frame;
+    };
 }
 
 @end
