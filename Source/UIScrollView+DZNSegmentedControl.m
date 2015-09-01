@@ -104,7 +104,7 @@ static NSString *contentOffsetKey = @"contentOffset";
         CGPoint contentOffset = [change[NSKeyValueChangeNewKey] CGPointValue];
         
         if (self.isDragging || self.isDecelerating) {
-            [self.segmentedControl setScrollOffset:contentOffset contentSize:self.contentSize];
+            [self.segmentedControl setScrollOffset:contentOffset contentSize:self.contentSize scrollViewSize:self.frame.size];
         }
     }
 }

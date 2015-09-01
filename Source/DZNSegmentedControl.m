@@ -25,6 +25,7 @@
 
 @property (nonatomic, getter = isTransitioning) BOOL transitioning;
 @property (nonatomic, getter = isImageMode) BOOL imageMode; // Default NO
+@property (nonatomic, assign, getter=isSelectionIndicatorAnimating) BOOL selectionIndicatorAnimating;
 
 @end
 
@@ -493,34 +494,69 @@
     _barPosition = [delegate positionForBar:self];
 }
 
-- (void)setScrollOffset:(CGPoint)scrollOffset contentSize:(CGSize)contentSize
-{
-    self.autoAdjustSelectionIndicatorWidth = NO;
-    self.bouncySelectionIndicator = NO;
-    
-    CGFloat offset = 0.0;
-    
+- (void)setScrollOffset:(CGPoint)scrollOffset
+            contentSize:(CGSize)contentSize
+         scrollViewSize:(CGSize)scrollViewSize {
+    CGFloat offset = .0f;
+    CGFloat pageIndex = .0f;
+    scrollOffset.x = MIN(scrollOffset.x, contentSize.width - scrollViewSize.width);
+    scrollOffset.x = MAX(scrollOffset.x, 0);
+    scrollOffset.y = MIN(scrollOffset.y, contentSize.height - scrollViewSize.height);
+    scrollOffset.y = MAX(scrollOffset.y, 0);
+
+    CGRect selectionIndicatorFrame = [self selectionIndicatorRect];
+
     // Horizontal scroll
     if (self.scrollOffset.x != scrollOffset.x) {
-        offset = scrollOffset.x/(contentSize.width/self.numberOfSegments);
+        offset = scrollOffset.x / (contentSize.width/self.numberOfSegments);
+        pageIndex = scrollOffset.x / scrollViewSize.width;
     }
     // Vertical scroll
     else if (self.scrollOffset.y != scrollOffset.y) {
         offset = scrollOffset.y/(contentSize.height/self.numberOfSegments);
+        pageIndex = scrollOffset.y / scrollViewSize.height;
     }
     // Skip
     else {
         return;
     }
+
+    CGFloat percentageOffset = offset - floor(offset);
+    NSUInteger countButtons = [self buttons].count;
+    NSUInteger nextButtonIndex = pageIndex >= 0 ? ceilf(pageIndex) : 0;
+    NSUInteger previousButtonIndex = MIN(floorf(pageIndex), countButtons - 1);;
+
+    UIButton *nextButton = [self buttonAtIndex:nextButtonIndex];
+    UIButton *previousButton = [self buttonAtIndex:previousButtonIndex];
+
+    CGRect nextButtonFrame = nextButton.frame;
+    CGRect previousButtonFrame = previousButton.frame;
+
+    // Compute x offset
+    CGFloat xDistance = CGRectGetMinX(nextButtonFrame) - CGRectGetMinX(previousButtonFrame);
+    CGFloat xCoord = CGRectGetMinX(previousButtonFrame) + (xDistance * percentageOffset);
+    selectionIndicatorFrame.origin.x = xCoord;
     
-    CGFloat buttonWidth = roundf(self.width/self.numberOfSegments);
-    
-    CGRect indicatorRect = self.selectionIndicator.frame;
-    indicatorRect.origin.x = (buttonWidth * offset);
-    self.selectionIndicator.frame = indicatorRect;
-    
+    // Compute width
+    CGFloat nextButtonWidth = CGRectGetWidth(nextButtonFrame);
+    CGFloat previousButtonWidth = CGRectGetWidth(previousButtonFrame);
+    CGFloat widthDifferance = ABS(nextButtonWidth - previousButtonWidth);
+    CGFloat width = MIN(nextButtonWidth, previousButtonWidth) + (widthDifferance * percentageOffset);
+    selectionIndicatorFrame.size.width = width;
+
+    self.selectionIndicatorAnimating = YES;
+    [UIView animateWithDuration:.01f
+                          delay:.0f
+                        options:(UIViewAnimationOptionCurveEaseOut)
+                     animations:^{
+                         self.selectionIndicator.frame = selectionIndicatorFrame;
+                     }
+     
+                     completion:^(BOOL finished) {
+                         self.selectionIndicatorAnimating = NO;
+                     }];
+
     NSUInteger index = (NSUInteger)offset;
-    
     if (offset == truncf(offset) && self.selectedSegmentIndex != index) {
         
         [self unselectAllButtons];
@@ -850,7 +886,9 @@
 
 - (void)configureAccessoryViews
 {
-    self.selectionIndicator.frame = [self selectionIndicatorRect];
+    if (!self.isSelectionIndicatorAnimating) {
+        self.selectionIndicator.frame = [self selectionIndicatorRect];
+    }
     self.selectionIndicator.backgroundColor = self.selectionIndicatorColor;
     
     self.hairline.frame = [self hairlineRect];

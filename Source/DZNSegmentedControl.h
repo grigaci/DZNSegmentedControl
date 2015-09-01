@@ -137,8 +137,11 @@ enum {
  
  @param scrollOffset The tracking scrollView's contentOffset
  @param contentSize The tracking scrollView's contentSize
+ @param scrollViewSize The size of the scrollView.
  */
-- (void)setScrollOffset:(CGPoint)scrollOffset contentSize:(CGSize)contentSize;
+- (void)setScrollOffset:(CGPoint)scrollOffset
+            contentSize:(CGSize)contentSize
+         scrollViewSize:(CGSize)scrollViewSize;
 
 /**
  Returns the title of the specified segment.
