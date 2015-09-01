@@ -51,7 +51,7 @@ static NSString *contentOffsetKey = @"contentOffset";
         [self addObserver:self forKeyPath:contentOffsetKey options:NSKeyValueObservingOptionNew context:&observerContext];
         [segmentedControl addTarget:self action:@selector(dzn_didChangeSegement:) forControlEvents:UIControlEventValueChanged];
     }
-    else if (self.segmentedControl) {
+    else {
         [self removeObserver:self forKeyPath:contentOffsetKey context:&observerContext];
         [segmentedControl removeTarget:self action:@selector(dzn_didChangeSegement:) forControlEvents:UIControlEventValueChanged];
     }
